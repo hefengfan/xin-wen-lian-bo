@@ -89,22 +89,18 @@ const getAbstract = async (link) => {
         return abstract;
     } catch (error) {
         console.error(`Error fetching abstract from ${link}:`, error);
-        return null;
     }
 };
 
 const getNews = async (links) => {
     const linksLength = links.length;
     console.log('共', linksLength, '则新闻, 开始获取');
-    var news = [];
-    for (let i = 0; i < linksLength; i++) {
-        const url = links[i];
+    const newsPromises = links.map(async (url) => {
         try {
             const htmlResponse = await fetch(url);
             if (!htmlResponse.ok) {
                 console.warn(`Failed to fetch news from ${url}: ${htmlResponse.status} ${htmlResponse.statusText}`);
-                news.push({ title: `Failed to fetch: ${url}`, content: `Failed to fetch content from ${url}. Status: ${htmlResponse.status}` });
-                continue;
+                return { title: `Failed to fetch: ${url}`, content: `Failed to fetch content from ${url}. Status: ${htmlResponse.status}` };
             }
             const html = await htmlResponse.text();
             const dom = new JSDOM(html);
@@ -114,14 +110,15 @@ const getNews = async (links) => {
             const title = titleElement?.innerHTML?.replace('[视频]', '') || `No Title Found - ${url}`;
             const content = contentElement?.innerHTML || `No Content Found - ${url}`;
 
-            news.push({ title, content });
             console.count('获取的新闻则数');
+            return { title, content };
         } catch (error) {
             console.error(`Error fetching news from ${url}:`, error);
-            news.push({ title: `Error fetching: ${url}`, content: `Error fetching content from ${url}: ${error}` });
+            return { title: `Error fetching: ${url}`, content: `Error fetching content from ${url}: ${error}` };
         }
-        await sleep(500); // Wait half a second between requests to avoid rate limiting
-    }
+    });
+
+    const news = await Promise.all(newsPromises);
     console.log('成功获取所有新闻');
     return news;
 };
@@ -151,6 +148,14 @@ const updateCatalogue = async ({ catalogueJsonPath, readmeMdPath, date, abstract
             console.warn("Catalogue file not found or invalid JSON. Creating new catalogue.");
         }
 
+        // Check if the date already exists in the catalogue
+        const existingEntryIndex = catalogueJson.findIndex(entry => entry.date === date);
+
+        if (existingEntryIndex !== -1) {
+            console.log(`Entry for ${date} already exists in catalogue. Skipping update.`);
+            return;
+        }
+
         catalogueJson.unshift({
             date,
             abstract,
@@ -163,6 +168,13 @@ const updateCatalogue = async ({ catalogueJsonPath, readmeMdPath, date, abstract
             const readmeData = await readFile(readmeMdPath);
             const readmeText = readmeData.toString();
             const newEntry = `- [${date}](./news/${date}.md)`;
+
+            // Check if the entry already exists in the README
+            if (readmeText.includes(newEntry)) {
+                console.log(`Entry for ${date} already exists in README. Skipping update.`);
+                return;
+            }
+
             const updatedReadme = readmeText.replace('<!-- INSERT -->', `<!-- INSERT -->\n${newEntry}`);
             await writeFile(readmeMdPath, updatedReadme);
             console.log('Updated README.md');
@@ -182,6 +194,15 @@ async function getAllNews(startDate, endDate) {
     while (currentDate <= end) {
         const dateStr = formatDate(currentDate);
         console.log(`Processing date: ${dateStr}`);
+
+        const NEWS_MD_PATH = path.join(NEWS_PATH, dateStr + '.md');
+
+        // Check if the news file already exists
+        if (fs.existsSync(NEWS_MD_PATH)) {
+            console.log(`News file for ${dateStr} already exists. Skipping.`);
+            currentDate.setDate(currentDate.getDate() + 1);
+            continue;
+        }
 
         try {
             const newsListResult = await getNewsList(dateStr);
@@ -207,7 +228,7 @@ async function getAllNews(startDate, endDate) {
                 links: newsListResult.news
             });
 
-            const NEWS_MD_PATH = path.join(NEWS_PATH, dateStr + '.md');
+
             await saveTextToFile(NEWS_MD_PATH, md);
             await updateCatalogue({
                 catalogueJsonPath: CATALOGUE_JSON_PATH,
@@ -222,7 +243,7 @@ async function getAllNews(startDate, endDate) {
         }
 
         currentDate.setDate(currentDate.getDate() + 1); // Increment date
-        await sleep(1000); // Add a delay to avoid rate limiting
+        await sleep(500); // Reduce delay to 0.5 seconds. Adjust as needed.
     }
 
     console.log("Finished processing all dates.");
