@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新闻联播文字稿</title>
     <link rel="stylesheet" href="web/github-markdown.min.css">
+    <script src="web/showdown.min.js"></script>
     <style>
         /* Custom styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #e0f2f7;
+            background-color: #f0f0f0; /* Light gray background */
             margin: 0;
             padding: 0;
             transition: background-color 0.3s ease;
@@ -40,59 +41,48 @@
             color: #0077cc;
         }
 
-        .news-item {
-            margin-bottom: 1.5em;
+        .markdown-body h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #005580;
+        }
+
+        .abstract {
+            margin-bottom: 1em;
+            padding: 1em;
             border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #003366;
+        }
+
+        .markdown-body ul {
+            list-style-type: square;
+            padding-left: 2em;
+        }
+
+        .markdown-body pre {
+            background-color: #f0f0f0;
             padding: 1em;
             border-radius: 8px;
-            background-color: #fff;
+            overflow-x: auto;
         }
 
-        .news-date {
-            font-weight: bold;
-            color: #222;
-            margin-bottom: 0.5em;
-            display: block;
-        }
-
-        .news-abstract {
-            font-weight: normal;
-            color: #333;
-        }
-
-        .copy-button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-left: 10px;
-        }
-
-        .search-container {
-            display: flex;
-            margin-bottom: 10px;
-        }
-
-        .search-input {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .search-options {
-            margin-left: 10px;
-        }
-
-        .search-options label {
-            margin-right: 10px;
+        .markdown-body blockquote {
+            border-left: 4px solid #ccc;
+            padding-left: 1em;
+            font-style: italic;
+            color: #666;
         }
 
         footer {
@@ -102,121 +92,102 @@
             color: #777;
             font-size: 0.9em;
         }
+
+        /* Customizations */
+        .markdown-body strong {
+            font-weight: bold;
+            color: #000; /* Black color for bold text */
+        }
+
+        /* Search box styling */
+        #search-container {
+            text-align: center;
+            margin-bottom: 1em;
+        }
+
+        #search-input {
+            padding: 0.5em;
+            width: 70%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #search-results {
+            margin-top: 1em;
+            font-style: italic;
+            color: #777;
+        }
     </style>
 </head>
 <body>
-    <div id="view" class="markdown-body">
-        <h1>《新闻联播》文字稿</h1>
-        <p>每日20-22点自动更新当日文字稿</p>
-
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="搜索内容">
-            <div class="search-options">
-                <label>
-                    <input type="radio" name="searchType" value="abstract" checked> 摘要
-                </label>
-                <label>
-                    <input type="radio" name="searchType" value="title"> 主题
-                </label>
-            </div>
-        </div>
-
-        <div id="newsList">加载中...</div>
+    <div id="search-container">
+        <input type="text" id="search-input" placeholder="搜索日期或关键词...">
+        <div id="search-results"></div>
     </div>
+    <div id="view" class="markdown-body">加载中...</div>
     <footer>
         &copy; 何丰帆 搜集整理
     </footer>
     <script>
-        let newsData = [];
-        let uniqueNews = {}; // Object to store unique news items by date
+        let allNews = []; // Store all news data
 
         fetch(`/news/catalogue.json`).then(response => {
             return response.json();
         }).then(json => {
-            // Filter out duplicate news items based on date
-            json.forEach(item => {
-                if (!uniqueNews[item.date]) {
-                    uniqueNews[item.date] = item;
-                }
-            });
-
-            // Convert the uniqueNews object back to an array
-            newsData = Object.values(uniqueNews).sort((a, b) => b.date.localeCompare(a.date));
-            renderNews(newsData);
+            allNews = json.sort((a, b) => b.date.localeCompare(a.date)); // Sort and store
+            render(allNews);
         });
 
-        function renderNews(data) {
-            const newsListElement = document.getElementById('newsList');
-            newsListElement.innerHTML = '';
+        function render(json) {
+            let md = `# **《新闻联播》文字稿**\n` +
+                "\n" +
+                "每日20-22点自动更新当日文字稿\n" +
+                "\n";
 
-            if (data.length === 0) {
-                newsListElement.innerHTML = '<p>没有找到匹配的新闻。</p>';
-                return;
-            }
-
-            data.forEach(theNew => {
-                const newsItem = document.createElement('div');
-                newsItem.classList.add('news-item');
-
-                const dateElement = document.createElement('span');
-                dateElement.classList.add('news-date');
-                dateElement.textContent = `《新闻联播》 (${theNew.date})`;
-                newsItem.appendChild(dateElement);
-
-                const abstractElement = document.createElement('p');
-                abstractElement.classList.add('news-abstract');
-                abstractElement.textContent = theNew.abstract.replaceAll("\n", ' ');
-                newsItem.appendChild(abstractElement);
-
-                const copyButton = document.createElement('button');
-                copyButton.classList.add('copy-button');
-                copyButton.textContent = '复制';
-                copyButton.addEventListener('click', () => {
-                    copyToClipboard(theNew.date, theNew.abstract.replaceAll("\n", ' '));
-                });
-                newsItem.appendChild(copyButton);
-
-                newsListElement.appendChild(newsItem);
+            json.forEach(theNew => {
+                let date = theNew.date;
+                let abstract = theNew.abstract.replaceAll("\n", ' ');
+                md += `## **${date}**\n`;
+                md += `${abstract}\n\n`;
+                md += `[阅读全文](web/view.html?date=${date})\n\n`;
             });
-        }
 
-        function copyToClipboard(date, abstract) {
-            const textToCopy = `《新闻联播》 (${date})\n${abstract}`;
-            navigator.clipboard.writeText(textToCopy)
-                .then(() => {
-                    alert('已复制到剪贴板!');
-                })
-                .catch(err => {
-                    console.error('复制失败: ', err);
-                    alert('复制失败，请手动复制。');
-                });
+            const viewElement = document.getElementById('view');
+            const converter = new showdown.Converter({
+                customizedHeaderId: true,
+                openLinksInNewWindow: true,
+                tables: true,
+                strikethrough: true,
+                tasklists: true,
+                simplifiedAutoLink: true,
+                smartIndentationFix: true,
+                parseImgDimensions: true
+            });
+            viewElement.innerHTML = converter.makeHtml(md);
         }
 
         // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
-
-        searchInput.addEventListener('input', function() {
+        document.getElementById('search-input').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
-            let searchType = 'abstract'; // Default search type
+            const searchResultsDiv = document.getElementById('search-results');
 
-            // Determine the selected search type
-            for (const radio of searchTypeRadios) {
-                if (radio.checked) {
-                    searchType = radio.value;
-                    break;
-                }
+            if (searchTerm.trim() === '') {
+                render(allNews); // Show all news when search is empty
+                searchResultsDiv.textContent = ''; // Clear search results message
+                return;
             }
 
-            const filteredNews = newsData.filter(item => {
-                if (searchType === 'abstract') {
-                    return item.abstract.toLowerCase().includes(searchTerm);
-                } else {
-                    // Assuming 'title' search type means searching within the date
-                    return `《新闻联播》 (${item.date})`.toLowerCase().includes(searchTerm);
-                }
+            const filteredNews = allNews.filter(item => {
+                return item.date.includes(searchTerm) || item.abstract.toLowerCase().includes(searchTerm);
             });
-            renderNews(filteredNews);
+
+            if (filteredNews.length > 0) {
+                render(filteredNews);
+                searchResultsDiv.textContent = `找到 ${filteredNews.length} 条匹配结果`;
+            } else {
+                viewElement.innerHTML = '未找到匹配结果';
+                searchResultsDiv.textContent = '未找到匹配结果';
+            }
         });
     </script>
 </body>
