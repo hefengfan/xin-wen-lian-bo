@@ -7,26 +7,70 @@
 		<title>{{date}} - 新闻联播文字稿查看</title>
 		<link rel="stylesheet" href="./github-markdown.min.css">
 		<script src="./showdown.min.js"></script>
-	</head>
-	<body>
-		<div id="view" class="markdown-body">加载中...</div>
 		<style>
-			html, 
-			body, 
+			/* Basic Reset & Body Styling */
+			html, body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				/* Modern font stack for better readability */
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+			}
+
+			/* Light blue background for the entire page */
+			body {
+				background-color: #f0f8ff; /* A common, very light aliceblue */
+				display: flex; /* Use flexbox to center the content container */
+				justify-content: center; /* Center horizontally */
+				align-items: flex-start; /* Align content to the top, not center, as it can be long */
+				padding: 20px 0; /* Add vertical padding to the body */
+				box-sizing: border-box; /* Include padding in body height calculation */
+			}
+
+			/* Container for the markdown content */
+			.content-container {
+				max-width: 800px; /* Optimal reading width for text */
+				width: 100%; /* Ensure it takes full width up to max-width */
+				background-color: #ffffff; /* White background for the content area */
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+				border-radius: 8px; /* Slightly rounded corners */
+				padding: 2em; /* Internal padding for the content area */
+				box-sizing: border-box; /* Include padding in width/height */
+				min-height: calc(100vh - 40px); /* Ensure it takes up most of the viewport height, accounting for body padding */
+				overflow: hidden; /* Clears floats and handles potential overflow issues */
+			}
+
+			/* Markdown body specific styles */
 			.markdown-body {
+				/* Resetting some default styles from the original snippet that are now handled by .content-container */
 				padding: 0;
 				border: none;
 				margin: 0;
-				height: 100%;
-				width: 100%;
-				word-break: break-all;
-				box-sizing: border-box;
+				width: 100%; /* Ensure it fills its container */
+				overflow: visible; /* Let the content-container handle overflow */
+				word-wrap: break-word; /* Better for long words than break-all */
 			}
-			.markdown-body {
-				padding: 1.2em;
-				overflow: auto;
+
+			/* Responsive adjustments for smaller screens (e.g., mobile phones) */
+			@media (max-width: 840px) { /* max-width + 2 * padding (800 + 2*20 = 840) */
+				body {
+					padding: 0; /* Remove body padding on small screens */
+				}
+				.content-container {
+					border-radius: 0; /* No rounded corners on small screens */
+					box-shadow: none; /* No shadow on small screens */
+					padding: 1em; /* Less padding on smaller screens */
+					min-height: 100vh; /* Take full viewport height */
+				}
 			}
 		</style>
+	</head>
+	<body>
+		<!-- New container for optimized layout -->
+		<div class="content-container">
+			<div id="view" class="markdown-body">加载中...</div>
+		</div>
+
 		<script>
 			function getQueryString(name) {
 				var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
@@ -42,6 +86,7 @@
 			}).then(md => {
 				render(md);
 			}).catch(e => {
+				// console.error("Failed to load news content:", e); // For debugging
 				fetch(`./Error.md`).then(errResponse => {
 					return errResponse.text();
 				}).then(errMd => {
