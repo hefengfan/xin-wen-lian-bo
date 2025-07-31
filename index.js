@@ -230,7 +230,7 @@ async function getAllNews(startDate, endDate) {
 
 // Main execution
 async function main() {
-    const startDate = new Date('1976-07-01'); // Replace with your desired start date
+    const startDate = new Date('2009-01-01'); // Replace with your desired start date
     const endDate = new Date(); // Today's date
 
     // Create directories if they don't exist
