@@ -89,6 +89,7 @@ const getAbstract = async (link) => {
         return abstract;
     } catch (error) {
         console.error(`Error fetching abstract from ${link}:`, error);
+        return null;
     }
 };
 
@@ -131,7 +132,7 @@ const newsToMarkdown = ({ date, abstract, news, links }) => {
         const link = links[i];
         mdNews += `### ${title}\n\n${content}\n\n[查看原文](${link})\n\n`;
     }
-    return `# 《新闻联播》 (${date})\n\n## 新闻摘要\n\n${abstract}\n\n## 详细新闻\n\n---\n\n(更新时间戳: ${new Date().getTime()})\n\n`;
+    return `# 《新闻联播》 (${date})\n\n## 新闻摘要\n\n${abstract}\n\n## 详细新闻\n\n${mdNews}\n\n---\n\n(更新时间戳: ${new Date().getTime()})\n\n`;
 };
 
 const saveTextToFile = async (savePath, text) => {
@@ -186,6 +187,72 @@ const updateCatalogue = async ({ catalogueJsonPath, readmeMdPath, date, abstract
     }
 };
 
+const processSingleDate = async (dateStr) => {
+    const NEWS_MD_PATH = path.join(NEWS_PATH, dateStr + '.md');
+    let needsRetry = false;
+
+    try {
+        let newsListResult = await getNewsList(dateStr);
+
+        if (!newsListResult) {
+            console.warn(`Skipping ${dateStr} due to failure in getting news list.`);
+            return;
+        }
+
+        let abstract = await getAbstract(newsListResult.abstract);
+        if (!abstract) {
+            console.warn(`Retrying abstract for ${dateStr} due to failure.`);
+            await sleep(1000); // Wait before retrying
+            abstract = await getAbstract(newsListResult.abstract); // Retry
+            if (!abstract) {
+                console.warn(`Skipping ${dateStr} due to persistent failure in getting abstract.`);
+                return;
+            }
+
+        }
+
+        let news = await getNews(newsListResult.news);
+        // Check if any news item has empty content and retry if needed
+        for (let i = 0; i < news.length; i++) {
+            if (!news[i].content || news[i].content.includes('No Content Found')) {
+                console.warn(`Retrying news content for ${dateStr} - ${newsListResult.news[i]} due to empty content.`);
+                await sleep(1000); // Wait before retrying
+                const retryNews = await getNews([newsListResult.news[i]]); // Fetch only the problematic news
+                if (retryNews && retryNews[0].content) {
+                    news[i] = retryNews[0]; // Update the news array with the retried content
+                } else {
+                    console.warn(`Skipping ${dateStr} - ${newsListResult.news[i]} due to persistent failure in getting content.`);
+                    needsRetry = true;
+                }
+            }
+        }
+
+        if (needsRetry) {
+            console.warn(`Skipping ${dateStr} due to at least one failure in getting content.`);
+            return;
+        }
+
+        const md = newsToMarkdown({
+            date: dateStr,
+            abstract,
+            news,
+            links: newsListResult.news
+        });
+
+        await saveTextToFile(NEWS_MD_PATH, md);
+        await updateCatalogue({
+            catalogueJsonPath: CATALOGUE_JSON_PATH,
+            readmeMdPath: README_PATH,
+            date: dateStr,
+            abstract: abstract
+        });
+
+        console.log(`Successfully processed ${dateStr}`);
+    } catch (error) {
+        console.error(`Failed to process ${dateStr}:`, error);
+    }
+};
+
 
 async function getAllNews(startDate, endDate) {
     let currentDate = new Date(startDate);
@@ -204,43 +271,7 @@ async function getAllNews(startDate, endDate) {
             continue;
         }
 
-        try {
-            const newsListResult = await getNewsList(dateStr);
-
-            if (!newsListResult) {
-                console.warn(`Skipping ${dateStr} due to failure in getting news list.`);
-                currentDate.setDate(currentDate.getDate() + 1);
-                continue;
-            }
-
-            const abstract = await getAbstract(newsListResult.abstract);
-            if (!abstract) {
-                console.warn(`Skipping ${dateStr} due to failure in getting abstract.`);
-                currentDate.setDate(currentDate.getDate() + 1);
-                continue;
-            }
-
-            const news = await getNews(newsListResult.news);
-            const md = newsToMarkdown({
-                date: dateStr,
-                abstract,
-                news,
-                links: newsListResult.news
-            });
-
-
-            await saveTextToFile(NEWS_MD_PATH, md);
-            await updateCatalogue({
-                catalogueJsonPath: CATALOGUE_JSON_PATH,
-                readmeMdPath: README_PATH,
-                date: dateStr,
-                abstract: abstract
-            });
-
-            console.log(`Successfully processed ${dateStr}`);
-        } catch (error) {
-            console.error(`Failed to process ${dateStr}:`, error);
-        }
+        await processSingleDate(dateStr);
 
         currentDate.setDate(currentDate.getDate() + 1); // Increment date
         await sleep(500); // Reduce delay to 0.5 seconds. Adjust as needed.
