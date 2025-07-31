@@ -7,6 +7,12 @@
     <title>新闻联播文字稿</title>
     <link rel="stylesheet" href="web/github-markdown.min.css">
     <style>
+        /* Base font size using clamp for responsiveness */
+        html {
+            /* Min 16px, preferred 1.5% of viewport width, Max 20px */
+            font-size: clamp(16px, 1.5vw, 20px);
+        }
+
         /* Custom styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,9 +25,9 @@
         }
 
         .container {
-            padding: 2em;
+            padding: 2rem; /* Use rem for consistent scaling */
             max-width: 900px; /* Wider content area */
-            margin: 2em auto; /* Center the content */
+            margin: 2rem auto; /* Center the content */
             background-color: #fff;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Stronger shadow */
             border-radius: 12px; /* More rounded corners */
@@ -36,17 +42,19 @@
 
         h1 {
             border-bottom: 2px solid #ccc;
-            padding-bottom: 0.5em;
+            padding-bottom: 0.5rem;
             color: #0077cc;
             text-align: center;
+            font-size: 2rem; /* Scaled with rem */
         }
 
         h2 {
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
             color: #005580;
             border-bottom: 1px solid #eee;
-            padding-bottom: 0.3em;
+            padding-bottom: 0.3rem;
+            font-size: 1.5rem; /* Scaled with rem */
         }
 
         a {
@@ -63,8 +71,8 @@
         /* Search Bar Styles */
         .search-container {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 1rem; /* Use rem */
+            margin-bottom: 2rem; /* Use rem */
             flex-wrap: wrap; /* Allow wrapping on smaller screens */
             align-items: center;
             justify-content: center; /* Center the input field */
@@ -73,18 +81,18 @@
         .search-container input[type="text"] {
             flex-grow: 1; /* Allow input to take available space */
             max-width: 600px; /* Limit max width for aesthetic */
-            padding: 12px 15px;
+            padding: 0.8rem 1rem; /* Use rem */
             border: 1px solid #ccc;
             border-radius: 8px;
-            font-size: 1em;
+            font-size: 1rem; /* Scaled with rem */
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
             min-width: 250px; /* Ensure input is not too small */
         }
 
         #searchResultsInfo {
             width: 100%; /* Take full width below search bar */
-            margin-top: 10px;
-            font-size: 0.95em;
+            margin-top: 1rem; /* Use rem */
+            font-size: 0.95rem; /* Scaled with rem */
             color: #555;
             text-align: center;
         }
@@ -94,8 +102,8 @@
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 8px;
-            padding: 1.5em;
-            margin-bottom: 1.5em;
+            padding: 1.5rem; /* Use rem */
+            margin-bottom: 1.5rem; /* Use rem */
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -107,24 +115,25 @@
 
         .news-item h3 {
             margin-top: 0;
-            margin-bottom: 0.5em;
+            margin-bottom: 0.5rem; /* Use rem */
             color: #005580;
-            font-size: 1.3em;
+            font-size: 1.3rem; /* Scaled with rem */
         }
 
         .news-item p {
-            margin-bottom: 1em;
+            margin-bottom: 1rem; /* Use rem */
             color: #444;
+            font-size: 1rem; /* Scaled with rem */
         }
 
         .news-item .read-more {
             display: inline-block;
-            margin-top: 0.5em;
-            padding: 8px 15px;
+            margin-top: 0.5rem; /* Use rem */
+            padding: 0.5rem 1rem; /* Use rem */
             background-color: #e0f2f7;
             border: 1px solid #b3e0f2;
             border-radius: 5px;
-            font-size: 0.9em;
+            font-size: 0.9rem; /* Scaled with rem */
             color: #0077cc;
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
@@ -140,21 +149,21 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 2em;
-            gap: 8px;
-            flex-wrap: wrap; /* Allow wrapping for many pages */
+            margin-top: 2rem; /* Use rem */
+            gap: 0.5rem; /* Use rem for gap */
+            flex-wrap: wrap; /* Allow wrapping as a fallback, but aim for one line */
         }
 
         .pagination-controls button {
-            padding: 10px 15px;
+            padding: 0.6rem 1rem; /* Use rem for padding */
             background-color: #0077cc;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.95em;
+            font-size: 0.95rem; /* Scaled with rem */
             transition: background-color 0.3s ease;
-            min-width: 80px; /* Ensure buttons have a consistent width */
+            /* Removed min-width to allow shrinking */
         }
 
         .pagination-controls button:hover:not(:disabled) {
@@ -168,13 +177,14 @@
         }
 
         .pagination-controls .page-number {
-            padding: 8px 12px;
+            padding: 0.5rem 0.8rem; /* Use rem for padding */
             border: 1px solid #ddd;
             border-radius: 5px;
             background-color: #f0f0f0;
             cursor: pointer;
             transition: background-color 0.3s ease, border-color 0.3s ease;
-            min-width: 40px; /* Ensure page number buttons have a consistent width */
+            /* Removed min-width to allow shrinking */
+            font-size: 1rem; /* Scaled with rem */
         }
 
         .pagination-controls .page-number:hover {
@@ -189,6 +199,11 @@
             font-weight: bold;
         }
 
+        .pagination-controls span { /* Ellipsis styling */
+            font-size: 1rem;
+            padding: 0.5rem 0.2rem;
+        }
+
         /* Highlight style for search results */
         mark {
             background-color: #ffeb3b; /* A standard yellow for highlighting */
@@ -199,17 +214,17 @@
         /* Footer styling */
         footer {
             text-align: center;
-            margin-top: 2em;
-            padding: 1em;
+            margin-top: 2rem; /* Use rem */
+            padding: 1rem; /* Use rem */
             color: #777;
-            font-size: 0.9em;
+            font-size: 0.9rem; /* Scaled with rem */
         }
 
-        /* Responsive adjustments */
+        /* Responsive adjustments - mostly handled by rem/vw now */
         @media (max-width: 768px) {
             .container {
-                padding: 1em;
-                margin: 1em auto;
+                padding: 1rem;
+                margin: 1rem auto;
             }
             .search-container {
                 flex-direction: column;
@@ -218,11 +233,7 @@
             .search-container input[type="text"] {
                 min-width: unset; /* Allow it to shrink on small screens */
             }
-            .pagination-controls button,
-            .pagination-controls .page-number {
-                min-width: unset; /* Allow buttons to shrink on small screens */
-                flex-grow: 1; /* Allow them to fill space */
-            }
+            /* Pagination buttons will shrink automatically due to removed min-width and rem units */
         }
     </style>
 </head>
@@ -357,7 +368,7 @@
                 const newsItemDiv = document.createElement('div');
                 newsItemDiv.classList.add('news-item');
                 newsItemDiv.innerHTML = `
-                    <h3>《新闻联播》 (${date})</h3>
+                    <h3>《新闻联播》 (${highlightText(date, searchTerm)})</h3>
                     <p>${highlightedAbstract}</p>
                     <a href="web/view.html?date=${date}" class="read-more" target="_blank">阅读全文 &rarr;</a>
                 `;
@@ -394,8 +405,8 @@
             });
             paginationControls.appendChild(prevButton);
 
-            // Page numbers (simplified: show a few around current page, plus first/last)
-            const maxPageButtonsToShow = 5; // Max number of page buttons to display
+            // Page numbers (more aggressively limited to fit on one line)
+            const maxPageButtonsToShow = 3; // Max number of page buttons to display in the middle
             let startPage = Math.max(1, currentPage - Math.floor(maxPageButtonsToShow / 2));
             let endPage = Math.min(totalPages, startPage + maxPageButtonsToShow - 1);
 
@@ -471,7 +482,7 @@
             } else {
                 // Filter by date or abstract keyword
                 filteredNews = allNewsData.filter(theNew => {
-                    const dateMatch = theNew.date.includes(searchTerm);
+                    const dateMatch = theNew.date.toLowerCase().includes(searchTerm); // Also highlight date in title
                     const abstractMatch = theNew.abstract.toLowerCase().includes(searchTerm);
                     return dateMatch || abstractMatch;
                 });
