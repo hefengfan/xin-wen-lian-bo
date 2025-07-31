@@ -6,28 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新闻联播文字稿</title>
     <link rel="stylesheet" href="web/github-markdown.min.css">
-    <script src="web/showdown.min.js"></script>
     <style>
         /* Custom styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #f0f0f0; /* Light gray background */
+            background-color: #e0f2f7; /* Light blue background */
             margin: 0;
             padding: 0;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease; /* Smooth background transition */
         }
 
-        .markdown-body {
+        .container {
             padding: 2em;
-            max-width: 900px;
-            margin: 2em auto;
+            max-width: 900px; /* Wider content area */
+            margin: 2em auto; /* Center the content */
             background-color: #fff;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            overflow: hidden;
-            animation: fadeIn 0.5s ease-in-out;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+            border-radius: 12px; /* More rounded corners */
+            overflow: hidden; /* Ensure proper rendering */
+            animation: fadeIn 0.5s ease-in-out; /* Fade-in animation */
         }
 
         @keyframes fadeIn {
@@ -35,56 +34,169 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .markdown-body h1 {
+        h1 {
             border-bottom: 2px solid #ccc;
             padding-bottom: 0.5em;
             color: #0077cc;
+            text-align: center;
         }
 
-        .markdown-body h3 {
+        h2 {
             margin-top: 1.5em;
             margin-bottom: 0.5em;
             color: #005580;
-        }
-
-        .abstract {
-            margin-bottom: 1em;
-            padding: 1em;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-            border-radius: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3em;
         }
 
         a {
             color: #0077cc;
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease; /* Smooth transition for hover effect */
         }
 
         a:hover {
             text-decoration: underline;
-            color: #003366;
+            color: #003366; /* Darker blue on hover */
         }
 
-        .markdown-body ul {
-            list-style-type: square;
-            padding-left: 2em;
+        /* Search Bar Styles */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            align-items: center;
+            justify-content: center; /* Center the input field */
         }
 
-        .markdown-body pre {
-            background-color: #f0f0f0;
-            padding: 1em;
+        .search-container input[type="text"] {
+            flex-grow: 1; /* Allow input to take available space */
+            max-width: 600px; /* Limit max width for aesthetic */
+            padding: 12px 15px;
+            border: 1px solid #ccc;
             border-radius: 8px;
-            overflow-x: auto;
+            font-size: 1em;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 250px; /* Ensure input is not too small */
         }
 
-        .markdown-body blockquote {
-            border-left: 4px solid #ccc;
-            padding-left: 1em;
-            font-style: italic;
-            color: #666;
+        #searchResultsInfo {
+            width: 100%; /* Take full width below search bar */
+            margin-top: 10px;
+            font-size: 0.95em;
+            color: #555;
+            text-align: center;
         }
 
+        /* News Item Styles */
+        .news-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1.5em;
+            margin-bottom: 1.5em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .news-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .news-item h3 {
+            margin-top: 0;
+            margin-bottom: 0.5em;
+            color: #005580;
+            font-size: 1.3em;
+        }
+
+        .news-item p {
+            margin-bottom: 1em;
+            color: #444;
+        }
+
+        .news-item .read-more {
+            display: inline-block;
+            margin-top: 0.5em;
+            padding: 8px 15px;
+            background-color: #e0f2f7;
+            border: 1px solid #b3e0f2;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #0077cc;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .news-item .read-more:hover {
+            background-color: #cceeff;
+            border-color: #99d6f0;
+            text-decoration: none;
+        }
+
+        /* Pagination Styles */
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2em;
+            gap: 8px;
+            flex-wrap: wrap; /* Allow wrapping for many pages */
+        }
+
+        .pagination-controls button {
+            padding: 10px 15px;
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.3s ease;
+            min-width: 80px; /* Ensure buttons have a consistent width */
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: #005580;
+        }
+
+        .pagination-controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .pagination-controls .page-number {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            min-width: 40px; /* Ensure page number buttons have a consistent width */
+        }
+
+        .pagination-controls .page-number:hover {
+            background-color: #e0e0e0;
+            border-color: #ccc;
+        }
+
+        .pagination-controls .page-number.active {
+            background-color: #0077cc;
+            color: white;
+            border-color: #0077cc;
+            font-weight: bold;
+        }
+
+        /* Highlight style for search results */
+        mark {
+            background-color: #ffeb3b; /* A standard yellow for highlighting */
+            padding: 0 2px; /* Small padding for better visual */
+            border-radius: 3px; /* Slightly rounded corners */
+        }
+
+        /* Footer styling */
         footer {
             text-align: center;
             margin-top: 2em;
@@ -93,102 +205,291 @@
             font-size: 0.9em;
         }
 
-        /* Customizations */
-        .markdown-body strong {
-            font-weight: bold;
-            color: #000; /* Black color for bold text */
-        }
-
-        /* Search box styling */
-        #search-container {
-            text-align: center;
-            margin-bottom: 1em;
-        }
-
-        #search-input {
-            padding: 0.5em;
-            width: 70%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        #search-results {
-            margin-top: 1em;
-            font-style: italic;
-            color: #777;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1em;
+                margin: 1em auto;
+            }
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-container input[type="text"] {
+                min-width: unset; /* Allow it to shrink on small screens */
+            }
+            .pagination-controls button,
+            .pagination-controls .page-number {
+                min-width: unset; /* Allow buttons to shrink on small screens */
+                flex-grow: 1; /* Allow them to fill space */
+            }
         }
     </style>
 </head>
 <body>
-    <div id="search-container">
-        <input type="text" id="search-input" placeholder="搜索日期或关键词...">
-        <div id="search-results"></div>
+    <div class="container">
+        <h1>《新闻联播》文字稿</h1>
+        <p style="text-align: center; color: #666; font-style: italic;">每日20-22点自动更新当日文字稿</p>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="输入关键字或日期 (例: 20231026, 经济) 实时搜索" autocomplete="off">
+            <div id="searchResultsInfo" class="search-info"></div>
+        </div>
+
+        <div id="newsListContainer">
+            <!-- News items will be loaded here -->
+            <p style="text-align: center;">加载中...</p>
+        </div>
+
+        <div id="paginationControls" class="pagination-controls">
+            <!-- Pagination buttons will be inserted here by JavaScript -->
+        </div>
     </div>
-    <div id="view" class="markdown-body">加载中...</div>
+
     <footer>
         &copy; 何丰帆 搜集整理
     </footer>
+
     <script>
-        let allNews = []; // Store all news data
+        let allNewsData = []; // Stores all fetched, sorted, and deduplicated news data
+        let currentFilteredNews = []; // Stores the currently filtered news (all news or search results)
+        const itemsPerPage = 10; // Number of news items to display per page
+        let currentPage = 1; // Current active page
+        let searchTimeout; // To hold the timeout ID for debouncing
 
-        fetch(`/news/catalogue.json`).then(response => {
-            return response.json();
-        }).then(json => {
-            allNews = json.sort((a, b) => b.date.localeCompare(a.date)); // Sort and store
-            render(allNews);
-        });
+        // Fetch news data and initialize display
+        fetch(`/news/catalogue.json`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(json => {
+                // 1. Sort in reverse chronological order (newest first)
+                let sortedNews = json.sort((a, b) => b.date.localeCompare(a.date));
 
-        function render(json) {
-            let md = `# **《新闻联播》文字稿**\n` +
-                "\n" +
-                "每日20-22点自动更新当日文字稿\n" +
-                "\n";
+                // 2. Deduplicate by date (keep the first occurrence for each date)
+                const uniqueDates = new Set();
+                allNewsData = sortedNews.filter(news => {
+                    if (uniqueDates.has(news.date)) {
+                        return false; // This date is already in our set, so skip this duplicate
+                    }
+                    uniqueDates.add(news.date); // Add date to set
+                    return true; // Keep this news item
+                });
 
-            json.forEach(theNew => {
-                let date = theNew.date;
-                let abstract = theNew.abstract.replaceAll("\n", ' ');
-                md += `## **${date}**\n`;
-                md += `${abstract}\n\n`;
-                md += `[阅读全文](web/view.html?date=${date})\n\n`;
+                currentFilteredNews = allNewsData; // Initialize filtered news with all unique news
+                displayNews(currentFilteredNews, 1); // Display the first page of all news
+            })
+            .catch(error => {
+                console.error("Error fetching news data:", error);
+                document.getElementById('newsListContainer').innerHTML = "<p style='color: red; text-align: center;'>加载新闻数据失败，请检查网络或稍后再试。</p>";
+                document.getElementById('paginationControls').innerHTML = ''; // Hide pagination on error
             });
 
-            const viewElement = document.getElementById('view');
-            const converter = new showdown.Converter({
-                customizedHeaderId: true,
-                openLinksInNewWindow: true,
-                tables: true,
-                strikethrough: true,
-                tasklists: true,
-                simplifiedAutoLink: true,
-                smartIndentationFix: true,
-                parseImgDimensions: true
-            });
-            viewElement.innerHTML = converter.makeHtml(md);
+        /**
+         * Highlights occurrences of a search term within a given text.
+         * @param {string} text - The text to highlight.
+         * @param {string} searchTerm - The term to search for and highlight.
+         * @returns {string} The text with search terms wrapped in <mark> tags.
+         */
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) {
+                return text; // No search term, return original text
+            }
+            // Escape special characters in the search term for regex
+            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Create a regular expression for global (g) and case-insensitive (i) matching
+            const regex = new RegExp(escapedSearchTerm, 'gi');
+            // Replace all matches with the match wrapped in <mark> tags
+            return text.replace(regex, match => `<mark>${match}</mark>`);
         }
 
-        // Search functionality
-        document.getElementById('search-input').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const searchResultsDiv = document.getElementById('search-results');
+        /**
+         * Displays a given array of news items in the #newsListContainer for a specific page.
+         * @param {Array} newsData - The array of news objects (can be all news or filtered search results).
+         * @param {number} page - The page number to display.
+         */
+        function displayNews(newsData, page = 1) {
+            currentPage = page; // Update current page
+            const newsListContainer = document.getElementById('newsListContainer');
+            const searchResultsInfo = document.getElementById('searchResultsInfo');
+            const searchTerm = document.getElementById('searchInput').value.trim(); // Get current search term for highlighting
+            newsListContainer.innerHTML = ''; // Clear previous content
 
-            if (searchTerm.trim() === '') {
-                render(allNews); // Show all news when search is empty
-                searchResultsDiv.textContent = ''; // Clear search results message
+            // Calculate start and end index for the current page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedNews = newsData.slice(startIndex, endIndex);
+
+            if (paginatedNews.length === 0 && newsData.length > 0) {
+                // If current page is empty but total data exists (e.g., navigated past last page),
+                // go back to the last valid page.
+                const lastPage = Math.ceil(newsData.length / itemsPerPage);
+                if (lastPage > 0) {
+                    displayNews(newsData, lastPage);
+                    return;
+                }
+            }
+
+            if (newsData.length === 0) {
+                newsListContainer.innerHTML = '<p style="text-align: center; color: #777;">没有找到匹配的新闻。</p>';
+                searchResultsInfo.textContent = '0 条结果';
+                renderPagination(0); // Hide pagination if no results
                 return;
             }
 
-            const filteredNews = allNews.filter(item => {
-                return item.date.includes(searchTerm) || item.abstract.toLowerCase().includes(searchTerm);
+            // Update search results info
+            if (searchTerm) {
+                searchResultsInfo.textContent = `找到 ${newsData.length} 条结果`;
+            } else {
+                searchResultsInfo.textContent = ''; // Clear info if no search term
+            }
+
+            paginatedNews.forEach(theNew => {
+                const date = theNew.date;
+                // Replace newlines with spaces for a single-line abstract display
+                let abstract = theNew.abstract.replaceAll("\n", ' ');
+                // Apply highlighting to the abstract
+                const highlightedAbstract = highlightText(abstract, searchTerm);
+
+                const newsItemDiv = document.createElement('div');
+                newsItemDiv.classList.add('news-item');
+                newsItemDiv.innerHTML = `
+                    <h3>《新闻联播》 (${date})</h3>
+                    <p>${highlightedAbstract}</p>
+                    <a href="web/view.html?date=${date}" class="read-more" target="_blank">阅读全文 &rarr;</a>
+                `;
+                newsListContainer.appendChild(newsItemDiv);
             });
 
-            if (filteredNews.length > 0) {
-                render(filteredNews);
-                searchResultsDiv.textContent = `找到 ${filteredNews.length} 条匹配结果`;
-            } else {
-                viewElement.innerHTML = '未找到匹配结果';
-                searchResultsDiv.textContent = '未找到匹配结果';
+            // Always render pagination based on the total *filtered* news items
+            renderPagination(newsData.length);
+
+            // Scroll to top of the container after rendering new page
+            document.querySelector('.container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        /**
+         * Renders the pagination controls based on the total number of items.
+         * @param {number} totalItems - The total number of items in the current filtered set.
+         */
+        function renderPagination(totalItems) {
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = ''; // Clear previous pagination
+
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            if (totalPages <= 1) {
+                return; // No need for pagination if only one page or less
             }
+
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '上一页';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                displayNews(currentFilteredNews, currentPage - 1);
+            });
+            paginationControls.appendChild(prevButton);
+
+            // Page numbers (simplified: show a few around current page, plus first/last)
+            const maxPageButtonsToShow = 5; // Max number of page buttons to display
+            let startPage = Math.max(1, currentPage - Math.floor(maxPageButtonsToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPageButtonsToShow - 1);
+
+            // Adjust startPage if we don't have enough pages to fill maxPageButtonsToShow from the end
+            if (endPage - startPage + 1 < maxPageButtonsToShow) {
+                startPage = Math.max(1, endPage - maxPageButtonsToShow + 1);
+            }
+
+            // Always show first page if not in range
+            if (startPage > 1) {
+                const firstPageButton = document.createElement('button');
+                firstPageButton.textContent = '1';
+                firstPageButton.classList.add('page-number');
+                firstPageButton.addEventListener('click', () => {
+                    displayNews(currentFilteredNews, 1);
+                });
+                paginationControls.appendChild(firstPageButton);
+                if (startPage > 2) { // Add ellipsis if there's a gap
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    paginationControls.appendChild(ellipsis);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    displayNews(currentFilteredNews, i);
+                });
+                paginationControls.appendChild(pageButton);
+            }
+
+            // Always show last page if not in range
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) { // Add ellipsis if there's a gap
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    paginationControls.appendChild(ellipsis);
+                }
+                const lastPageButton = document.createElement('button');
+                lastPageButton.textContent = totalPages;
+                lastPageButton.classList.add('page-number');
+                lastPageButton.addEventListener('click', () => {
+                    displayNews(currentFilteredNews, totalPages);
+                });
+                paginationControls.appendChild(lastPageButton);
+            }
+
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '下一页';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                displayNews(currentFilteredNews, currentPage + 1);
+            });
+            paginationControls.appendChild(nextButton);
+        }
+
+        /**
+         * Performs the search based on the input field value.
+         */
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            let filteredNews = [];
+
+            if (searchTerm === '') {
+                filteredNews = allNewsData; // If search term is empty, display all news
+            } else {
+                // Filter by date or abstract keyword
+                filteredNews = allNewsData.filter(theNew => {
+                    const dateMatch = theNew.date.includes(searchTerm);
+                    const abstractMatch = theNew.abstract.toLowerCase().includes(searchTerm);
+                    return dateMatch || abstractMatch;
+                });
+            }
+            currentFilteredNews = filteredNews; // Update the global filtered news array
+            displayNews(currentFilteredNews, 1); // Always go to the first page after a new search
+        }
+
+        // Event Listener for live search with debouncing
+        document.getElementById('searchInput').addEventListener('input', () => {
+            clearTimeout(searchTimeout); // Clear the previous timeout
+            searchTimeout = setTimeout(() => {
+                performSearch(); // Execute search after a delay
+            }, 300); // 300ms delay after last keystroke
         });
+
+        // Initial content when JS is loading (will be replaced by actual news)
+        document.getElementById('newsListContainer').innerHTML = "<p style='text-align: center;'>加载中...</p>";
     </script>
 </body>
 </html>
