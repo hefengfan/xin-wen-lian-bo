@@ -12,7 +12,7 @@ const CATALOGUE_JSON_PATH = path.join(NEWS_PATH, 'catalogue.json');
 const README_PATH = path.join(__dirname, 'README.md');
 
 // Utility Functions (moved to the top for clarity)
-const add0 = num => num < 10 ? ('0' + num) : num;
+const add0 = num => num < 10 ? ('0' + num) : add0(num);
 
 const formatDate = (date) => {
     return '' + date.getFullYear() + add0(date.getMonth() + 1) + add0(date.getDate());
@@ -187,69 +187,54 @@ const updateCatalogue = async ({ catalogueJsonPath, readmeMdPath, date, abstract
     }
 };
 
-const processSingleDate = async (dateStr) => {
+const checkAndReProcess = async (dateStr) => {
     const NEWS_MD_PATH = path.join(NEWS_PATH, dateStr + '.md');
-    let needsRetry = false;
 
     try {
-        let newsListResult = await getNewsList(dateStr);
+        const mdContent = await readFile(NEWS_MD_PATH);
+        const mdText = mdContent.toString();
 
-        if (!newsListResult) {
-            console.warn(`Skipping ${dateStr} due to failure in getting news list.`);
-            return;
-        }
+        const hasAbstract = mdText.includes('## 新闻摘要');
+        const hasDetailedNews = mdText.includes('## 详细新闻');
 
-        let abstract = await getAbstract(newsListResult.abstract);
-        if (!abstract) {
-            console.warn(`Retrying abstract for ${dateStr} due to failure.`);
-            await sleep(1000); // Wait before retrying
-            abstract = await getAbstract(newsListResult.abstract); // Retry
-            if (!abstract) {
-                console.warn(`Skipping ${dateStr} due to persistent failure in getting abstract.`);
+        if (!hasAbstract || !hasDetailedNews) {
+            console.log(`File for ${dateStr} exists but is incomplete. Re-processing.`);
+
+            const newsListResult = await getNewsList(dateStr);
+
+            if (!newsListResult) {
+                console.warn(`Skipping ${dateStr} due to failure in getting news list.`);
                 return;
             }
 
-        }
-
-        let news = await getNews(newsListResult.news);
-        // Check if any news item has empty content and retry if needed
-        for (let i = 0; i < news.length; i++) {
-            if (!news[i].content || news[i].content.includes('No Content Found')) {
-                console.warn(`Retrying news content for ${dateStr} - ${newsListResult.news[i]} due to empty content.`);
-                await sleep(1000); // Wait before retrying
-                const retryNews = await getNews([newsListResult.news[i]]); // Fetch only the problematic news
-                if (retryNews && retryNews[0].content) {
-                    news[i] = retryNews[0]; // Update the news array with the retried content
-                } else {
-                    console.warn(`Skipping ${dateStr} - ${newsListResult.news[i]} due to persistent failure in getting content.`);
-                    needsRetry = true;
-                }
+            const abstract = await getAbstract(newsListResult.abstract);
+            if (!abstract) {
+                console.warn(`Skipping ${dateStr} due to failure in getting abstract.`);
+                return;
             }
+
+            const news = await getNews(newsListResult.news);
+            const md = newsToMarkdown({
+                date: dateStr,
+                abstract,
+                news,
+                links: newsListResult.news
+            });
+
+            await saveTextToFile(NEWS_MD_PATH, md);
+            await updateCatalogue({
+                catalogueJsonPath: CATALOGUE_JSON_PATH,
+                readmeMdPath: README_PATH,
+                date: dateStr,
+                abstract: abstract
+            });
+
+            console.log(`Successfully re-processed ${dateStr}`);
+        } else {
+            console.log(`File for ${dateStr} is complete. Skipping re-processing.`);
         }
-
-        if (needsRetry) {
-            console.warn(`Skipping ${dateStr} due to at least one failure in getting content.`);
-            return;
-        }
-
-        const md = newsToMarkdown({
-            date: dateStr,
-            abstract,
-            news,
-            links: newsListResult.news
-        });
-
-        await saveTextToFile(NEWS_MD_PATH, md);
-        await updateCatalogue({
-            catalogueJsonPath: CATALOGUE_JSON_PATH,
-            readmeMdPath: README_PATH,
-            date: dateStr,
-            abstract: abstract
-        });
-
-        console.log(`Successfully processed ${dateStr}`);
     } catch (error) {
-        console.error(`Failed to process ${dateStr}:`, error);
+        console.error(`Error checking/re-processing ${dateStr}:`, error);
     }
 };
 
@@ -266,12 +251,47 @@ async function getAllNews(startDate, endDate) {
 
         // Check if the news file already exists
         if (fs.existsSync(NEWS_MD_PATH)) {
-            console.log(`News file for ${dateStr} already exists. Skipping.`);
-            currentDate.setDate(currentDate.getDate() + 1);
-            continue;
-        }
+            console.log(`News file for ${dateStr} exists. Checking for completeness.`);
+            await checkAndReProcess(dateStr);
+        } else {
+            try {
+                const newsListResult = await getNewsList(dateStr);
 
-        await processSingleDate(dateStr);
+                if (!newsListResult) {
+                    console.warn(`Skipping ${dateStr} due to failure in getting news list.`);
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    continue;
+                }
+
+                const abstract = await getAbstract(newsListResult.abstract);
+                if (!abstract) {
+                    console.warn(`Skipping ${dateStr} due to failure in getting abstract.`);
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    continue;
+                }
+
+                const news = await getNews(newsListResult.news);
+                const md = newsToMarkdown({
+                    date: dateStr,
+                    abstract,
+                    news,
+                    links: newsListResult.news
+                });
+
+
+                await saveTextToFile(NEWS_MD_PATH, md);
+                await updateCatalogue({
+                    catalogueJsonPath: CATALOGUE_JSON_PATH,
+                    readmeMdPath: README_PATH,
+                    date: dateStr,
+                    abstract: abstract
+                });
+
+                console.log(`Successfully processed ${dateStr}`);
+            } catch (error) {
+                console.error(`Failed to process ${dateStr}:`, error);
+            }
+        }
 
         currentDate.setDate(currentDate.getDate() + 1); // Increment date
         await sleep(500); // Reduce delay to 0.5 seconds. Adjust as needed.
