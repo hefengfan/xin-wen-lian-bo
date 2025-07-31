@@ -8,68 +8,86 @@
 		<link rel="stylesheet" href="./github-markdown.min.css">
 		<script src="./showdown.min.js"></script>
 		<style>
-			/* Basic Reset & Body Styling */
-			html, body {
-				margin: 0;
-				padding: 0;
-				height: 100%;
-				/* Modern font stack for better readability */
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-			}
-
-			/* Light blue background for the entire page */
+			/* Custom styles for improved readability */
 			body {
-				background-color: #f0f8ff; /* A common, very light aliceblue */
-				display: flex; /* Use flexbox to center the content container */
-				justify-content: center; /* Center horizontally */
-				align-items: flex-start; /* Align content to the top, not center, as it can be long */
-				padding: 20px 0; /* Add vertical padding to the body */
-				box-sizing: border-box; /* Include padding in body height calculation */
+				font-family: sans-serif; /* Use a more readable font */
+				line-height: 1.6; /* Increase line height for better readability */
+				background-color: #f0f8ff; /* Light blue background */
+				color: #333; /* Darker text color for better contrast */
 			}
 
-			/* Container for the markdown content */
-			.content-container {
-				max-width: 800px; /* Optimal reading width for text */
-				width: 100%; /* Ensure it takes full width up to max-width */
-				background-color: #ffffff; /* White background for the content area */
-				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-				border-radius: 8px; /* Slightly rounded corners */
-				padding: 2em; /* Internal padding for the content area */
-				box-sizing: border-box; /* Include padding in width/height */
-				min-height: calc(100vh - 40px); /* Ensure it takes up most of the viewport height, accounting for body padding */
-				overflow: hidden; /* Clears floats and handles potential overflow issues */
-			}
-
-			/* Markdown body specific styles */
 			.markdown-body {
-				/* Resetting some default styles from the original snippet that are now handled by .content-container */
-				padding: 0;
-				border: none;
-				margin: 0;
-				width: 100%; /* Ensure it fills its container */
-				overflow: visible; /* Let the content-container handle overflow */
-				word-wrap: break-word; /* Better for long words than break-all */
+				padding: 2em; /* Increase padding for more spacing */
+				max-width: 800px; /* Limit the width for better readability on larger screens */
+				margin: 0 auto; /* Center the content */
+				overflow: auto;
+				box-sizing: border-box;
+				background-color: #fff; /* White background for the content area */
+				border-radius: 8px; /* Add rounded corners */
+				box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
 			}
 
-			/* Responsive adjustments for smaller screens (e.g., mobile phones) */
-			@media (max-width: 840px) { /* max-width + 2 * padding (800 + 2*20 = 840) */
-				body {
-					padding: 0; /* Remove body padding on small screens */
-				}
-				.content-container {
-					border-radius: 0; /* No rounded corners on small screens */
-					box-shadow: none; /* No shadow on small screens */
-					padding: 1em; /* Less padding on smaller screens */
-					min-height: 100vh; /* Take full viewport height */
+			/* Style headings */
+			.markdown-body h1,
+			.markdown-body h2,
+			.markdown-body h3,
+			.markdown-body h4,
+			.markdown-body h5,
+			.markdown-body h6 {
+				font-weight: bold;
+				margin-top: 1.5em;
+				margin-bottom: 0.5em;
+				line-height: 1.2;
+			}
+
+			/* Style paragraphs */
+			.markdown-body p {
+				margin-bottom: 1em;
+			}
+
+			/* Style links */
+			.markdown-body a {
+				color: #007bff; /* Blue link color */
+				text-decoration: none;
+			}
+
+			.markdown-body a:hover {
+				text-decoration: underline;
+			}
+
+			/* Style lists */
+			.markdown-body ul,
+			.markdown-body ol {
+				margin-bottom: 1em;
+				padding-left: 2em;
+			}
+
+			/* Style code blocks */
+			.markdown-body pre {
+				background-color: #f8f8f8;
+				border: 1px solid #ddd;
+				padding: 1em;
+				overflow-x: auto;
+				border-radius: 4px;
+			}
+
+			.markdown-body code {
+				font-family: monospace;
+				background-color: #f8f8f8;
+				padding: 0.2em 0.4em;
+				border-radius: 4px;
+			}
+
+			/* Responsive adjustments */
+			@media (max-width: 768px) {
+				.markdown-body {
+					padding: 1em;
 				}
 			}
 		</style>
 	</head>
 	<body>
-		<!-- New container for optimized layout -->
-		<div class="content-container">
-			<div id="view" class="markdown-body">加载中...</div>
-		</div>
+		<div id="view" class="markdown-body">加载中...</div>
 
 		<script>
 			function getQueryString(name) {
@@ -86,7 +104,6 @@
 			}).then(md => {
 				render(md);
 			}).catch(e => {
-				// console.error("Failed to load news content:", e); // For debugging
 				fetch(`./Error.md`).then(errResponse => {
 					return errResponse.text();
 				}).then(errMd => {
