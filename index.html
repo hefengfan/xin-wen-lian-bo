@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新闻联播文字稿</title>
+    <title>CCTV Evening News Transcripts</title>
     <link rel="stylesheet" href="web/github-markdown.min.css">
     <style>
         /* Base font size using clamp for responsiveness */
@@ -250,17 +250,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>《新闻联播》文字稿</h1>
-        <p style="text-align: center; color: #666; font-style: italic;">每日20-22点自动更新当日文字稿</p>
+        <h1>CCTV Evening News Transcripts</h1>
+        <p style="text-align: center; color: #666; font-style: italic;">Automatically updated daily at 20:00-22:00</p>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="输入关键字或日期 (例: 20231026, 经济) 实时搜索" autocomplete="off">
+            <input type="text" id="searchInput" placeholder="Enter keyword or date (e.g., 20231026, economy) for real-time search" autocomplete="off">
             <div id="searchResultsInfo" class="search-info"></div>
         </div>
 
         <div id="newsListContainer">
             <!-- News items will be loaded here -->
-            <p style="text-align: center;">加载中...</p>
+            <p style="text-align: center;">Loading...</p>
         </div>
 
         <div id="paginationControls" class="pagination-controls">
@@ -269,7 +269,7 @@
     </div>
 
     <footer>
-        &copy; 何丰帆 搜集整理
+        &copy; Collected and organized by He Fengfan
     </footer>
 
     <script>
@@ -306,7 +306,7 @@
             })
             .catch(error => {
                 console.error("Error fetching news data:", error);
-                document.getElementById('newsListContainer').innerHTML = "<p style='color: red; text-align: center;'>加载新闻数据失败，请检查网络或稍后再试。</p>";
+                document.getElementById('newsListContainer').innerHTML = "<p style='color: red; text-align: center;'>Failed to load news data. Please check your network or try again later.</p>";
                 document.getElementById('paginationControls').innerHTML = ''; // Hide pagination on error
             });
 
@@ -321,7 +321,7 @@
                 return text; // No search term, return original text
             }
             // Escape special characters in the search term for regex
-            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\{{input}}');
             // Create a regular expression for global (g) and case-insensitive (i) matching
             const regex = new RegExp(escapedSearchTerm, 'gi');
             // Replace all matches with the match wrapped in <mark> tags
@@ -356,15 +356,15 @@
             }
 
             if (newsData.length === 0) {
-                newsListContainer.innerHTML = '<p style="text-align: center; color: #777;">没有找到匹配的新闻。</p>';
-                searchResultsInfo.textContent = '0 条结果';
+                newsListContainer.innerHTML = '<p style="text-align: center; color: #777;">No matching news found.</p>';
+                searchResultsInfo.textContent = '0 results';
                 renderPagination(0); // Hide pagination if no results
                 return;
             }
 
             // Update search results info
             if (searchTerm) {
-                searchResultsInfo.textContent = `找到 ${newsData.length} 条结果`;
+                searchResultsInfo.textContent = `Found ${newsData.length} results`;
             } else {
                 searchResultsInfo.textContent = ''; // Clear info if no search term
             }
@@ -379,9 +379,9 @@
                 const newsItemDiv = document.createElement('div');
                 newsItemDiv.classList.add('news-item');
                 newsItemDiv.innerHTML = `
-                    <h3>《新闻联播》 (${highlightText(date, searchTerm)})</h3>
+                    <h3>CCTV Evening News (${highlightText(date, searchTerm)})</h3>
                     <p>${highlightedAbstract}</p>
-                    <a href="web/view.html?date=${date}" class="read-more" target="_blank">阅读全文 &rarr;</a>
+                    <a href="web/view.html?date=${date}" class="read-more" target="_blank">Read More &rarr;</a>
                 `;
                 newsListContainer.appendChild(newsItemDiv);
             });
@@ -513,7 +513,7 @@
         });
 
         // Initial content when JS is loading (will be replaced by actual news)
-        document.getElementById('newsListContainer').innerHTML = "<p style='text-align: center;'>加载中...</p>";
+        document.getElementById('newsListContainer').innerHTML = "<p style='text-align: center;'>Loading...</p>";
     </script>
 </body>
 </html>
