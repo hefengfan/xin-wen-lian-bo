@@ -96,70 +96,128 @@
             color: #777;
             font-size: 0.9em;
         }
+
+        /* Custom additions */
+        .news-item {
+            margin-bottom: 1.5em;
+            border: 1px solid #ddd;
+            padding: 1em;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .news-date {
+            font-weight: bold;
+            color: #222; /* Black color */
+            margin-bottom: 0.5em;
+            display: block;
+        }
+
+        .news-abstract {
+            font-weight: normal; /* Regular font weight */
+            color: #333; /* Default color */
+        }
+
+        .copy-button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
-    <div id="view" class="markdown-body">加载中...</div>
+    <div id="view" class="markdown-body">
+        <h1>《新闻联播》文字稿</h1>
+        <p>每日20-22点自动更新当日文字稿</p>
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索日期 (YYYYMMDD) 或关键词">
+        <div id="newsList">加载中...</div>
+    </div>
     <footer>
         &copy; 何丰帆 搜集整理
     </footer>
     <script>
+        let newsData = []; // Store the fetched news data
+
         fetch(`/news/catalogue.json`).then(response => {
             return response.json();
         }).then(json => {
-            render(json.sort((a, b) => b.date.localeCompare(a.date))); // Sort in reverse chronological order
+            newsData = json.sort((a, b) => b.date.localeCompare(a.date)); // Sort in reverse chronological order
+            renderNews(newsData); // Initial render
         });
 
-        function render(json) {
-            /*
-            json: [
-                {
-                "date": "20220929"
-                "abstract": "123\n456"
-                }
-            ]
-            */
-            let md = `# 《新闻联播》文字稿\n` +
-                "\n" +
-                "每日20-22点自动更新当日文字稿\n" +
-                "\n" +
-                "## 目录: \n" +
-                "\n";
+        function renderNews(data) {
+            const newsListElement = document.getElementById('newsList');
+            newsListElement.innerHTML = ''; // Clear existing content
 
-            json.forEach(theNew => {
-                let date = theNew.date;
-                let abstract = theNew.abstract.replaceAll("\n", ' ');
-                md += `- 《新闻联播》 (${date}) [\[查看摘要\]](#${date})  [\[阅读全篇\]](web/view.html?date=${date})\n`;
+            if (data.length === 0) {
+                newsListElement.innerHTML = '<p>没有找到匹配的新闻。</p>';
+                return;
+            }
+
+            data.forEach(theNew => {
+                const newsItem = document.createElement('div');
+                newsItem.classList.add('news-item');
+
+                const dateElement = document.createElement('span');
+                dateElement.classList.add('news-date');
+                dateElement.textContent = `《新闻联播》 (${theNew.date})`;
+                newsItem.appendChild(dateElement);
+
+                const abstractElement = document.createElement('p');
+                abstractElement.classList.add('news-abstract');
+                abstractElement.textContent = theNew.abstract.replaceAll("\n", ' ');
+                newsItem.appendChild(abstractElement);
+
+                const copyButton = document.createElement('button');
+                copyButton.classList.add('copy-button');
+                copyButton.textContent = '复制';
+                copyButton.addEventListener('click', () => {
+                    copyToClipboard(theNew.date, theNew.abstract.replaceAll("\n", ' '));
+                });
+                newsItem.appendChild(copyButton);
+
+                newsListElement.appendChild(newsItem);
             });
-
-            md += `## 新闻摘要\n` +
-                "\n";
-
-            json.forEach(theNew => {
-                let date = theNew.date;
-                let abstract = theNew.abstract.replaceAll("\n", ' ');
-                md += `### [《新闻联播》 (${date})](web/view.html?date=${date}) <span id="${date}"></span>` +
-                    "\n" +
-                    `${abstract}\n` +
-                    "\n" +
-                    `[阅读全文](web/view.html?date=${date})\n` +
-                    "\n" +
-                    "\n";
-            });
-
-            const viewElement = document.getElementById('view');
-            const converter = new showdown.Converter({
-                customizedHeaderId: true,
-                openLinksInNewWindow: true,
-                tables: true,           // Enable tables
-                strikethrough: true,    // Enable strikethrough
-                tasklists: true,        // Enable tasklists
-                simplifiedAutoLink: true, // Enable simplified autolinking
-                smartIndentationFix: true, // Enable smart indentation fix
-                parseImgDimensions: true  // Enable image dimension parsing
-            });
-            viewElement.innerHTML = converter.makeHtml(md);
         }
+
+        function copyToClipboard(date, abstract) {
+            const textToCopy = `《新闻联播》 (${date})\n${abstract}`;
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    alert('已复制到剪贴板!');
+                })
+                .catch(err => {
+                    console.error('复制失败: ', err);
+                    alert('复制失败，请手动复制。');
+                });
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredNews = newsData.filter(item => {
+                return item.date.includes(searchTerm) || item.abstract.toLowerCase().includes(searchTerm);
+            });
+            renderNews(filteredNews);
+        });
     </script>
 </body>
 </html>
