@@ -1,81 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>新闻联播文字稿</title>
-		<link rel="stylesheet" href="web/github-markdown.min.css">
-		<script src="web/showdown.min.js"></script>
-	</head>
-	<body>
-		<div id="view" class="markdown-body">加载中...</div>
-		<style>
-			html, 
-			body, 
-			.markdown-body {
-				padding: 0;
-				border: none;
-				margin: 0;
-				height: 100%;
-				width: 100%;
-				word-break: break-all;
-				box-sizing: border-box;
-			}
-			.markdown-body {
-				padding: 1.2em;
-				overflow: auto;
-			}
-		</style>
-		<script>
-			fetch(`/news/catalogue.json`).then(response => {
-				return response.json();
-			}).then(json => {
-				render(json);
-			});
-			function render(json) {
-				/* 
-				json: [
-					{
-					"date": "20220929"
-					"abstract": "123\n456"
-					}
-				]
-				*/
-				let md = `# 《新闻联播》文字稿\n` + 
-						"\n" + 
-						"每日20-22点自动更新当日文字稿\n" + 
-						"\n" + 
-						"开源地址: https://github.com/DuckBurnIncense/xin-wen-lian-bo\n" + 
-						"\n" + 
-						"## 目录: \n" + 
-						"\n";
-				json.forEach(theNew => {
-					let date = theNew.date;
-					let abstract = theNew.abstract.replaceAll("\n", ' ');
-					md += `- 《新闻联播》 (${date}) [\[查看摘要\]](#${date})  [\[阅读全篇\]](web/view.html?date=${date})\n`;
-				});
-				md += `## 新闻摘要\n` + 
-						"\n";
-				json.forEach(theNew => {
-					let date = theNew.date;
-					let abstract = theNew.abstract.replaceAll("\n", ' ');
-					md += `### [《新闻联播》 (${date})](web/view.html?date=${date}) {${date}}` + 
-						"\n" + 
-						`${abstract}\n` + 
-						"\n" + 
-						`[阅读全文](web/view.html?date=${date})\n` + 
-						"\n" + 
-						"\n";
-				});
-				md += `\n&copy; 2022 [DuckBurnIncense](mailto:DuckBurnIncense@outlook.com) 开源地址: [https://github.com/DuckBurnIncense/xin-wen-lian-bo](https://github.com/DuckBurnIncense/xin-wen-lian-bo)\n`
-				const viewElement = document.getElementById('view');
-				const converter = new showdown.Converter({ 
-					customizedHeaderId: true, 
-					openLinksInNewWindow: true
-				});
-				viewElement.innerHTML = converter.makeHtml(md);
-			}
-		</script>
-	</body>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻联播文字稿</title>
+    <link rel="stylesheet" href="web/github-markdown.min.css">
+    <script src="web/showdown.min.js"></script>
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #e0f2f7; /* Light blue background */
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease; /* Smooth background transition */
+        }
+
+        .markdown-body {
+            padding: 2em;
+            max-width: 900px; /* Wider content area */
+            margin: 2em auto; /* Center the content */
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+            border-radius: 12px; /* More rounded corners */
+            overflow: hidden; /* Ensure proper rendering */
+            animation: fadeIn 0.5s ease-in-out; /* Fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-body h1 {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 0.5em;
+            color: #0077cc;
+        }
+
+        .markdown-body h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #005580;
+        }
+
+        .abstract {
+            margin-bottom: 1em;
+            padding: 1em;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+            transition: color 0.3s ease; /* Smooth transition for hover effect */
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #003366; /* Darker blue on hover */
+        }
+
+        /* Enhanced list styles */
+        .markdown-body ul {
+            list-style-type: square;
+            padding-left: 2em;
+        }
+
+        /* Code block styling */
+        .markdown-body pre {
+            background-color: #f0f0f0;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        /* Blockquote styling */
+        .markdown-body blockquote {
+            border-left: 4px solid #ccc;
+            padding-left: 1em;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Footer styling */
+        footer {
+            text-align: center;
+            margin-top: 2em;
+            padding: 1em;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div id="view" class="markdown-body">加载中...</div>
+    <footer>
+        &copy; 何丰帆 搜集整理
+    </footer>
+    <script>
+        fetch(`/news/catalogue.json`).then(response => {
+            return response.json();
+        }).then(json => {
+            render(json.sort((a, b) => b.date.localeCompare(a.date))); // Sort in reverse chronological order
+        });
+
+        function render(json) {
+            /*
+            json: [
+                {
+                "date": "20220929"
+                "abstract": "123\n456"
+                }
+            ]
+            */
+            let md = `# 《新闻联播》文字稿\n` +
+                "\n" +
+                "每日20-22点自动更新当日文字稿\n" +
+                "\n" +
+                "## 目录: \n" +
+                "\n";
+
+            json.forEach(theNew => {
+                let date = theNew.date;
+                let abstract = theNew.abstract.replaceAll("\n", ' ');
+                md += `- 《新闻联播》 (${date}) [\[查看摘要\]](#${date})  [\[阅读全篇\]](web/view.html?date=${date})\n`;
+            });
+
+            md += `## 新闻摘要\n` +
+                "\n";
+
+            json.forEach(theNew => {
+                let date = theNew.date;
+                let abstract = theNew.abstract.replaceAll("\n", ' ');
+                md += `### [《新闻联播》 (${date})](web/view.html?date=${date}) <span id="${date}"></span>` +
+                    "\n" +
+                    `${abstract}\n` +
+                    "\n" +
+                    `[阅读全文](web/view.html?date=${date})\n` +
+                    "\n" +
+                    "\n";
+            });
+
+            const viewElement = document.getElementById('view');
+            const converter = new showdown.Converter({
+                customizedHeaderId: true,
+                openLinksInNewWindow: true,
+                tables: true,           // Enable tables
+                strikethrough: true,    // Enable strikethrough
+                tasklists: true,        // Enable tasklists
+                simplifiedAutoLink: true, // Enable simplified autolinking
+                smartIndentationFix: true, // Enable smart indentation fix
+                parseImgDimensions: true  // Enable image dimension parsing
+            });
+            viewElement.innerHTML = converter.makeHtml(md);
+        }
+    </script>
+</body>
 </html>
